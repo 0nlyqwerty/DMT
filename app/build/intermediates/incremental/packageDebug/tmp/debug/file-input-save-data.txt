@@ -1,0 +1,7 @@
+#Internal package file, do not edit.
+#Tue Oct 09 19:52:21 KST 2018
+0.baseType=DIRECTORY
+0.base=C\:\\Users\\b2n\\git\\DMT\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\19
+0.path=classes.dex
+0.set=DEX
+count=1

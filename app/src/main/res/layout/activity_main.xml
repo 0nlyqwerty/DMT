@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+
+    <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_margin="6dp" android:focusable="true" android:focusableInTouchMode="true">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight = "1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:id="@+id/mainLayout" >
+
+                <LinearLayout android:orientation="horizontal" android:focusable="true" android:focusableInTouchMode="true" android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <TextView android:textStyle="bold" android:layout_width="80dp" android:layout_height="wrap_content" android:gravity="center" android:text="IP"/>
+                    <EditText android:id="@+id/editIp" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Enter ip address" android:singleLine = "true" android:lines = "1" android:text="127.0.0.1"/>
+                </LinearLayout>
+
+                <LinearLayout android:orientation="horizontal" android:focusable="true" android:focusableInTouchMode="true" android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <TextView android:textStyle="bold" android:layout_width="80dp" android:layout_height="wrap_content" android:gravity="center" android:text="Repeats"/>
+                    <EditText android:id="@+id/editRepeats" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" android:hint="Enter ping repeats" android:text="3"/>
+                </LinearLayout>
+
+                <LinearLayout android:orientation="horizontal" android:focusable="true" android:focusableInTouchMode="true" android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <TextView android:textStyle="bold" android:layout_width="80dp" android:layout_height="wrap_content" android:gravity="center" android:text="Interval"/>
+                    <EditText android:id="@+id/editInterval" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" android:hint="Enter ping interval" android:text="2"/>
+                </LinearLayout>
+
+                <LinearLayout android:orientation="horizontal" android:focusable="true" android:focusableInTouchMode="true" android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <TextView android:textStyle="bold" android:layout_width="80dp" android:layout_height="wrap_content" android:gravity="center" android:text="Size"/>
+                    <EditText android:id="@+id/editSize" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="number" android:hint="Enter ping size" android:text="4"/>
+                </LinearLayout>
+
+                <LinearLayout android:layout_gravity="center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content">
+                    <Button android:id="@+id/btnSetSave" android:layout_width="70dp" android:layout_height="wrap_content" android:text="Set\nSave" android:textSize = "12dp"/>
+                    <Button android:id="@+id/btnSetLoad" android:layout_width="70dp" android:layout_height="wrap_content" android:text="Set\nLoad" android:textSize = "12dp"/>
+                    <Button android:id="@+id/btnLogSave" android:layout_width="70dp" android:layout_height="wrap_content" android:text="Log\nSave" android:textSize = "12dp"/>
+                    <Button android:id="@+id/btnLogClear" android:layout_width="70dp" android:layout_height="wrap_content" android:text="Log\nClear" android:textSize = "12dp"/>
+                    <Button android:id="@+id/btnStart" android:layout_width="70dp" android:layout_height="wrap_content" android:text="Test\nStart" android:textSize = "12dp"/>
+                    <Button android:id="@+id/btnStop" android:layout_width="70dp" android:layout_height="wrap_content" android:text="Test\nStop" android:textSize = "12dp"/>
+                </LinearLayout>
+
+                <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
+                    <ScrollView android:id="@+id/scroll_log" android:layout_width="match_parent" android:layout_height="wrap_content">
+                        <TextView android:id="@+id/textLog" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="DMT" />
+                    </ScrollView>
+                </LinearLayout>
+            </LinearLayout>
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center">
+<!--
+            <Switch
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="Run"
+                android:id="@+id/swRun"
+                android:checked="false"
+                android:layout_weight="20"
+                android:layout_gravity="center"/>
+-->
+            <Button
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="run"
+                android:id="@+id/runBtn"
+                android:layout_gravity="center"
+                android:gravity="center"/>
+            <Button
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="Stop"
+                android:id="@+id/stopRunBtn"
+                android:layout_gravity="center"/>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>
