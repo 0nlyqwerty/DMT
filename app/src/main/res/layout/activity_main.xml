@@ -41,8 +41,7 @@
                 </LinearLayout>
 
                 <LinearLayout android:layout_gravity="center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content">
-                    <Button android:id="@+id/btnSetSave" android:layout_width="70dp" android:layout_height="wrap_content" android:text="Set\nSave" android:textSize = "12dp"/>
-                    <Button android:id="@+id/btnSetLoad" android:layout_width="70dp" android:layout_height="wrap_content" android:text="Set\nLoad" android:textSize = "12dp"/>
+
                     <Button android:id="@+id/btnLogSave" android:layout_width="70dp" android:layout_height="wrap_content" android:text="Log\nSave" android:textSize = "12dp"/>
                     <Button android:id="@+id/btnLogClear" android:layout_width="70dp" android:layout_height="wrap_content" android:text="Log\nClear" android:textSize = "12dp"/>
                     <Button android:id="@+id/btnStart" android:layout_width="70dp" android:layout_height="wrap_content" android:text="Test\nStart" android:textSize = "12dp"/>
@@ -62,16 +61,16 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_gravity="center">
-<!--
-            <Switch
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:text="Run"
-                android:id="@+id/swRun"
-                android:checked="false"
-                android:layout_weight="20"
-                android:layout_gravity="center"/>
--->
+            <!--
+                        <Switch
+                            android:layout_width="100dp"
+                            android:layout_height="wrap_content"
+                            android:text="Run"
+                            android:id="@+id/swRun"
+                            android:checked="false"
+                            android:layout_weight="20"
+                            android:layout_gravity="center"/>
+            -->
             <Button
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"

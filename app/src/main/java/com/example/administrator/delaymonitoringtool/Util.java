@@ -1,6 +1,7 @@
 package com.example.administrator.delaymonitoringtool;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.Log;
 import android.view.inputmethod.InputMethodManager;
@@ -12,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -150,5 +152,29 @@ public class Util {
             Log.e(TAG, "error : " + e);
         }
 
+    }
+
+
+    public static void setSettingPref(String ip, String repeats, String interval, String size ,SharedPreferences pref){
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString("prefIp",ip);
+        editor.putString("prefRepeats",repeats);
+        editor.putString("prefInterval",interval);
+        editor.putString("prefSize",size);
+        editor.commit();
+    }
+
+    public static int getPid(Process p){
+        int pid = -1;
+
+        try {
+            Field f = p.getClass().getDeclaredField("pid");
+            f.setAccessible(true);
+            pid = f.getInt(p);
+            f.setAccessible(false);
+        }catch (Throwable e) {
+            pid = -1;
+        }
+        return pid;
     }
 }

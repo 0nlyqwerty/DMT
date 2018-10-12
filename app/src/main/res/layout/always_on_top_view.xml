@@ -8,6 +8,27 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:background="#40000000">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="12dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="▶"
+                android:textSize="10sp"
+                android:textColor="@color/green"/>
+            <TextView
+                android:id="@+id/eclipseTime"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="00:00:00"
+                android:textSize="10sp"
+                android:textColor="@color/white"
+                />
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -16,7 +37,7 @@
 
             <TextView
                 android:id="@+id/dlyTitle"
-                android:layout_width="22dp"
+                android:layout_width="26dp"
                 android:layout_height="wrap_content"
                 android:textSize="10sp"
                 android:textColor="@color/white"
@@ -40,7 +61,7 @@
 
             <TextView
                 android:id="@+id/minTitle"
-                android:layout_width="22dp"
+                android:layout_width="26dp"
                 android:layout_height="wrap_content"
                 android:textSize="10sp"
                 android:textColor="@color/white"
@@ -63,7 +84,7 @@
 
             <TextView
                 android:id="@+id/maxTitle"
-                android:layout_width="22dp"
+                android:layout_width="26dp"
                 android:layout_height="wrap_content"
                 android:textSize="10sp"
                 android:textColor="@color/white"
@@ -86,7 +107,7 @@
 
             <TextView
                 android:id="@+id/avrTitle"
-                android:layout_width="22dp"
+                android:layout_width="26dp"
                 android:layout_height="wrap_content"
                 android:textSize="10sp"
                 android:textColor="@color/white"

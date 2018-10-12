@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int SYSTEM_ALERT_WINDOW = 1;
     private static final int WRITE_EXTERNAL_STORAGE = 2;
 
-    String TAG = "DMT_";
+    String TAG = "DMT";
     String stringFileNewName;
     String logSavePath = (Environment.getExternalStorageDirectory() + "/DMT/PING_LOG/");
 
@@ -67,8 +67,6 @@ public class MainActivity extends AppCompatActivity {
     EditText editInterval;
     EditText editSize;
 
-    Button saveSetBtn;
-    Button loadSetBtn;
     Button saveLogBtn;
     Button clearLogBtn;
     Button startBtn;
@@ -174,37 +172,6 @@ public class MainActivity extends AppCompatActivity {
 
         showLog = (TextView) findViewById(R.id.textLog);
 
-        saveSetBtn = (Button) findViewById(R.id.btnSetSave);
-        saveSetBtn.setOnClickListener(
-                new View.OnClickListener(){
-                    @Override
-                    public void onClick(View v) {
-                        SharedPreferences setValue = getSharedPreferences("setValue",MODE_PRIVATE);
-                        SharedPreferences.Editor editor = setValue.edit();
-                        editor.putString("prefIp",Util.getTtoS(editIp));
-                        editor.putString("prefRepeats",Util.getTtoS(editRepeats));
-                        editor.putString("prefInterval",Util.getTtoS(editInterval));
-                        editor.putString("prefSize",Util.getTtoS(editSize));
-                        editor.commit();
-                        showLog.setText(setValue.getString("prefIp",""));
-                    }
-                }
-        );
-
-        loadSetBtn = (Button) findViewById(R.id.btnSetLoad);
-        loadSetBtn.setOnClickListener(
-                new View.OnClickListener(){
-                    @Override
-                    public void onClick(View v) {
-                        SharedPreferences setValue = getSharedPreferences("setValue",MODE_PRIVATE);
-                        editIp.setText(setValue.getString("prefIp",""));
-                        editRepeats.setText(setValue.getString("prefRepeats",""));
-                        editInterval.setText(setValue.getString("prefInterval",""));
-                        editSize.setText(setValue.getString("prefSize",""));
-                    }
-                }
-        );
-
         saveLogBtn = (Button) findViewById(R.id.btnLogSave);
         saveLogBtn.setOnClickListener(
                 new View.OnClickListener() {
@@ -241,10 +208,15 @@ public class MainActivity extends AppCompatActivity {
                         }else if(Util.checkEmpty(editInterval)){
                             Toast.makeText(MainActivity.this, "Please input Interval", Toast.LENGTH_LONG).show();
                             return;
-                        }else if(Util.checkEmpty(editSize)){
-                            Toast.makeText(MainActivity.this, "Please input Size", Toast.LENGTH_LONG).show();
+                        }else if((Util.checkEmpty(editSize)) || (Util.getTtoI(editSize) < 16) ){
+                            Toast.makeText(MainActivity.this, "Please input Size bigger than 16", Toast.LENGTH_LONG).show();
                             return;
                         }
+
+                        Util.setSettingPref(Util.getTtoS(editIp), Util.getTtoS(editRepeats),
+                                Util.getTtoS(editInterval), Util.getTtoS(editSize),
+                                getSharedPreferences("setValue", MODE_PRIVATE));
+
                         new Thread(new RunPing()).start();
                     }
                 }
@@ -422,6 +394,11 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         Util.closeKeyboard(this.editInterval, this);
+        SharedPreferences setValue = getSharedPreferences("setValue",MODE_PRIVATE);
+        editIp.setText(setValue.getString("prefIp",""));
+        editRepeats.setText(setValue.getString("prefRepeats",""));
+        editInterval.setText(setValue.getString("prefInterval",""));
+        editSize.setText(setValue.getString("prefSize",""));
     }
 
     // EditText enable or disable
@@ -443,12 +420,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void enabledButton(Boolean enabledButton){
         if(enabledButton){
-            this.saveSetBtn.setEnabled(true);
             this.saveLogBtn.setEnabled(true);
             this.clearLogBtn.setEnabled(true);
             this.startBtn.setEnabled(true);
         }else if(!enabledButton){
-            this.saveSetBtn.setEnabled(false);
             this.saveLogBtn.setEnabled(false);
             this.clearLogBtn.setEnabled(false);
             this.startBtn.setEnabled(false);
@@ -467,20 +442,20 @@ public class MainActivity extends AppCompatActivity {
 
         new AlertDialog.Builder(this).setView(textEntryView).setPositiveButton("YES",
                 new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                //Action for 'yes' button
-                if(Util.getTtoS(mname_edit).equals("") || mname_edit.length() <= 4
-                        || !Util.getTtoS(mname_edit).substring(mname_edit.length() - 4, mname_edit.length()).equals(".txt")) {
-                    mname_edit.setText(mOldName);
-                    Toast.makeText(MainActivity.this, "There is no file name\nor\nDoesn't include .txt at end of file name", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                stringFileNewName = mname_edit.getText().toString();
-                Util.writeTxtToFile(showLog.getText().toString(), logSavePath, stringFileNewName);
-                Toast.makeText(MainActivity.this, "LOG : " + logSavePath + stringFileNewName, Toast.LENGTH_LONG).show();
-            }
-        }).setNegativeButton("NO", new dialogDismiss()).show();
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Action for 'yes' button
+                        if(Util.getTtoS(mname_edit).equals("") || mname_edit.length() <= 4
+                                || !Util.getTtoS(mname_edit).substring(mname_edit.length() - 4, mname_edit.length()).equals(".txt")) {
+                            mname_edit.setText(mOldName);
+                            Toast.makeText(MainActivity.this, "There is no file name\nor\nDoesn't include .txt at end of file name", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        stringFileNewName = mname_edit.getText().toString();
+                        Util.writeTxtToFile(showLog.getText().toString(), logSavePath, stringFileNewName);
+                        Toast.makeText(MainActivity.this, "LOG : " + logSavePath + stringFileNewName, Toast.LENGTH_LONG).show();
+                    }
+                }).setNegativeButton("NO", new dialogDismiss()).show();
     }
 
 
@@ -522,18 +497,34 @@ public class MainActivity extends AppCompatActivity {
             if(Util.checkEmpty(editIp)){
                 Toast.makeText(MainActivity.this, "Please input IP", Toast.LENGTH_LONG).show();
                 return;
+            }else if(Util.checkEmpty(editRepeats)){
+                Toast.makeText(MainActivity.this, "Please input Repeats", Toast.LENGTH_LONG).show();
+                return;
             }else if(Util.checkEmpty(editInterval)){
                 Toast.makeText(MainActivity.this, "Please input Interval", Toast.LENGTH_LONG).show();
                 return;
+            }else if((Util.checkEmpty(editSize)) || (Util.getTtoI(editSize) < 16) ){
+                Toast.makeText(MainActivity.this, "Please input Size bigger than 16", Toast.LENGTH_LONG).show();
+                return;
             }
 
-            //give ip and interval value to MainService from MainActivity when service start
+            // set setting pref value
+            Util.setSettingPref(Util.getTtoS(editIp), Util.getTtoS(editRepeats),
+                    Util.getTtoS(editInterval), Util.getTtoS(editSize),
+                    getSharedPreferences("setValue", MODE_PRIVATE));
+
+            // give ip and interval value to MainService from MainActivity when service start
             String dest = Util.getTtoS(editIp);
+            String repeats = Util.getTtoS(editRepeats);
             String interval = Util.getTtoS(editInterval);
+            String size = Util.getTtoS(editSize);
+
             Intent intent = new Intent(this, MainService.class);
             Log.d(TAG, " " + dest + " " + interval);
             intent.putExtra("dest", dest);
+            intent.putExtra("repeats", repeats);
             intent.putExtra("interval", interval);
+            intent.putExtra("size", size);
             startService(intent);
 
             // create notification
@@ -607,43 +598,38 @@ public class MainActivity extends AppCompatActivity {
 // + SKT ip : 210.220.163.82
 
 /*
-1) delay 숫자에 따라 warning color disaly
-2) 결과를 새로운 뷰에 display. ex) min max avr
-3) Check Empty
 
-
-
+[구현완료]
 0. editIp 에 single line 속성 부여
 1. Run 시 Home 으로 돌아감
 2. startBtn 터치 시 setClickable false
 3. Run 시 notification 띄움, 해당 노티 터치 시 DMT 앱으로 진입
 4. edit ip 엔터키 disable
+5. Test Start 또는 Run 시 setting 값 저장됨. resume 시 불러와짐
+6. Log 창에 Rrt min/ avg /max/mdev 값 표시 추가 필요 -> packet size 최소값 16제한완료
+7. Run을 switch가 아니라 button 방식으로 바꿈
+8. Test "Run" 했을 시에도 Repeats / Size / interval 설정 값 인식가능하도록 수정 완료
+9. Float 창에 경과시간 추가 완료
 
+[구현필요]
+<Test 끝났을시 mdev 출력>
+    1. START 끝날땐 잘 뱉음
+    2. Run 끝났을 때 mdev 뱉을수있게하자.
+-> rtt 먼저생각해보고 안되면 공식쓰자
 
+<STOP 시 통계 안됨>
+    1. TEST STOP 눌렀을때 이상하게 끝나는게 아니라 통계든 뭐든 아무거나 값을 보여줄수있게만
+    2. RUN STOP 눌렀을때 mdev (표준편차) 나올 수 있게 할 수 있을까
 
-1.셋팅값 저장할수 있는 항목 추가 필요
--> 현재는 따로 버튼으로 바꿨지만
-Test Start 시 option 값 저장, Resume 시 값 호출하면 될것같음.
+0. 오토스크롤..
 
-2.시험 중 중단할 수 있는 STOP 기능 추가 필요
-->
+0.IP editText 에 dial only, number only 해도 상관없을것같음...
 
-3.Log 창에 Ping time 값 표시하는 항목 추가 필요
--> Interval 과 Size 옵션이 겹칠 경우 time 출력이 어려움.
-size 의 default 는 64byte, interval 은 1초임. 통계를 하기 위해서는
-size 혹은 interval 둘중 하나를 사용하지 않아야함.
-혹시 interval 옵션이 테스트 시간때문이라면,
-대체재로 테스트 시간을 초단위로 설정 할 수 있는 옵션이 있음.
-놉!!!!!!!!!!!!!!!!!!!!!!!!!!!! packet size가 16 이상이어야만 나오는거였음 -_-
+0. Repeats * interval 로 소요 예상시간 show 해주는 기능 추가
 
+0. 태블릿 말고 모바일디바이스에서 딜레이 조금씩 많이 차이나는현상 수정
 
-4.Log 창에 Rrt min/ avg /max/mdev 값 표시 추가 필요
--> min, avg, max, mdev 값 말하는것. Interval 와 Size 옵션이 겹칠경우 통계가 어려움
+[생각하자]
 
-5.Run on 이후 floating 창에 pingtime 진행되는 시간 및 실시간 ping time 값 표시 추가 필요
-->
-
-6.Floating 창으로 동작시 Repeats / Size 설정값도 인식가능하도록 수정필요.
--> 이것도 3,4번과 마찬가지로
 
  */

@@ -30,13 +30,16 @@ public class MainService extends Service {
     private static boolean RunTest = false;
     public static boolean Run = false;
     Handler handler = new Handle();
+    TextView eclipseText;
     TextView dlyValue;
     TextView minValue;
     TextView maxValue;
     TextView avrValue;
     private View mView;
     String destFromActivity;
+    String repeatFromActivity;
     String intervalFromActivity;
+    String sizeFromActivity;
     String fileDest;
     String folderDest;
     private static WindowManager mManager;
@@ -46,42 +49,57 @@ public class MainService extends Service {
     private int mViewX, mViewY;
 
     private boolean isMove = false;
-
     private boolean isEND = false;
+    boolean readyToGetMsg;
 
 
-    float sumDelay = (float) 0.0;
-    float minDelay = (float) 100.0;
-    float maxDelay = (float) 0.0;
-    int count = 0;
+    float sumDelay;
+    float minDelay;
+    float maxDelay ;
+    int count;
+    int printOnce;
+    int testStop;
+    long startTime;
+    long eclipseTime;
+    String delay="";
+    String strMinDelay="-";
+    String strMaxDelay="-";
+    String strAvrDelay="-";
     class Handle extends Handler {
         public void handleMessage(Message msg){
 
+
             if (msg.what == 1 ){
 
-                String showText = msg.getData().getString("test");
-                String[] arr = showText.split(" ");
-                String ip = arr[3].replace(":","");
-                String seq = arr[4].replace("icmp_seq=","");
-                String delay = arr[6].replace("time=","").replace(" ms","");
-                String size = arr[0];
-                int intSeq = Integer.parseInt(seq);
-                float floatDelay = Float.parseFloat(delay);
-                if(floatDelay < minDelay)
-                    minDelay = floatDelay;
-                if(floatDelay > maxDelay)
-                    maxDelay = floatDelay;
-                if(intSeq==1){
-                    sumDelay += (floatDelay)/(float)2;
-                }else{
-                    sumDelay += floatDelay;
-                }
+                String showText = msg.getData().getString("line");
 
-                Log.d(TAG, "sumDelay="+sumDelay+"/seq="+intSeq+" "+seq);
-                float avrDelay = sumDelay / (float) intSeq;
-                String strMinDelay = String.format("%.3f",minDelay);
-                String strMaxDelay = String.format("%.3f",maxDelay);
-                String strAvrDelay = String.format("%.3f",avrDelay);
+                String [] arr = showText.split(" ");
+                String ip,seq,size;
+                Log.e(TAG,"SONG  " + showText + arr.length);
+                if(arr.length == 8){
+                    ip = arr[3].replace(":","");
+                    seq = arr[4].replace("icmp_seq=","");
+                    delay = arr[6].replace("time=","").replace(" ms","");
+                    size = arr[0];
+                    int intSeq = Integer.parseInt(seq);
+
+                    float floatDelay = Float.parseFloat(delay);
+                    if(floatDelay < minDelay)
+                        minDelay = floatDelay;
+                    if(floatDelay > maxDelay)
+                        maxDelay = floatDelay;
+                    if(intSeq==1){
+                        sumDelay += (floatDelay)/(float)2;
+                    }else{
+                        sumDelay += floatDelay;
+                    }
+
+                    Log.d(TAG, "sumDelay="+sumDelay+"/seq="+intSeq+" "+seq);
+                    float avrDelay = sumDelay / (float) intSeq;
+                    strMinDelay = String.format("%.3f",minDelay);
+                    strMaxDelay = String.format("%.3f",maxDelay);
+                    strAvrDelay = String.format("%.3f",avrDelay);
+                }
 
                 if (arr != null){
                     dlyValue.setText(delay);
@@ -91,15 +109,29 @@ public class MainService extends Service {
                 } else {
                     Log.d(TAG, "arr is null");
                 }
-                if(count != 0)  //to first duplicate
+                if(arr.length == 8)  //to first duplicate
+                    Util.writeLog(showText,fileDest);
+                if(count != 0 && arr.length == 5)  //to first duplicate
                     Util.writeLog(showText,fileDest);
                 count++;
-                if(!RunTest){
+                if(!RunTest && printOnce == 0){
+                    printOnce++;
                     Util.writeLog("[ Min Delay : " + strMinDelay + " // Max Delay : " + strMaxDelay + " // Delay Average : " + strAvrDelay + " ]",fileDest);
                     Util.writeLog("////////ping test end",fileDest);
                     Toast.makeText(MainService.this,"Ping result saved at [ /DMT/ ] .",Toast.LENGTH_LONG).show();
+                    testStop = 1;
+                    onDestroy();
                 }
+                readyToGetMsg = true;
+            }else if (msg.what==2){
+                eclipseTime = System.currentTimeMillis() - startTime;
+                String eclipseTimeString = String.format("%02d:%02d:%02d",eclipseTime/(1000*60*60),(eclipseTime/(1000*60))%60,(eclipseTime/1000)%60);
+                Log.e(TAG,"SONG T : "+eclipseTimeString);
+                eclipseText.setText(eclipseTimeString);
             }
+
+
+
         }
     }
 
@@ -151,48 +183,69 @@ public class MainService extends Service {
     @Override
     public void onCreate(){
         super.onCreate();
-        RunTest = true;
-
-        LayoutInflater mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mView = mInflater.inflate(R.layout.always_on_top_view, null);
-
-        mView.setOnTouchListener(mViewTouchListener);
-
-        int LAYOUT_FLAG;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-        }else {
-            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE;
-        }
-
-        mParams = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                LAYOUT_FLAG,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                PixelFormat.TRANSLUCENT);
-
-        mManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        mManager.addView(mView, mParams);
-
-        dlyValue = (TextView) mView.findViewById(R.id.dlyValue);
-        minValue = (TextView) mView.findViewById(R.id.minValue);
-        maxValue = (TextView) mView.findViewById(R.id.maxValue);
-        avrValue = (TextView) mView.findViewById(R.id.avrValue);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startID) {
         Run = true;
+        startTime = System.currentTimeMillis();
         destFromActivity = intent.getStringExtra("dest");
+        repeatFromActivity = intent.getStringExtra("repeats");
         intervalFromActivity = intent.getStringExtra("interval");
+        sizeFromActivity = intent.getStringExtra("size");
         Log.d(TAG, "int :" + intervalFromActivity + " " + destFromActivity);
-        new Thread(new runPing()).start();
+
+        if(!RunTest){
+            sumDelay = (float) 0.0;
+            minDelay = (float) 100.0;
+            maxDelay = (float) 0.0;
+
+            Log.e(TAG, "SONG onStartCommand, RunTest become True");
+            RunTest = true;
+            count = 0;
+            printOnce = 0;
+            testStop = 0;
+            readyToGetMsg = true;
+
+            LayoutInflater mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            mView = mInflater.inflate(R.layout.always_on_top_view, null);
+
+            mView.setOnTouchListener(mViewTouchListener);
+
+            int LAYOUT_FLAG;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+            }else {
+                LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE;
+            }
+
+            mParams = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    LAYOUT_FLAG,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    PixelFormat.TRANSLUCENT);
+
+            mManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+            mManager.addView(mView, mParams);
+
+
+            eclipseText = (TextView) mView.findViewById(R.id.eclipseTime);
+            dlyValue = (TextView) mView.findViewById(R.id.dlyValue);
+            minValue = (TextView) mView.findViewById(R.id.minValue);
+            maxValue = (TextView) mView.findViewById(R.id.maxValue);
+            avrValue = (TextView) mView.findViewById(R.id.avrValue);
+
+            new Thread(new runPing()).start();
+            new Thread(new checkTime()).start();
+        }
+
         return super.onStartCommand(intent, flags, startID);
     }
 
     @Override
     public void onDestroy(){
+        Log.e(TAG,"SONG onDestroy");
         Run = false;
         RunTest = false;
         if(mView != null) {
@@ -208,47 +261,84 @@ public class MainService extends Service {
         @Override
         public void run() {
             try {
-                ping(destFromActivity, intervalFromActivity, sbWritePing);
+                ping(destFromActivity, repeatFromActivity, intervalFromActivity, sizeFromActivity, sbWritePing);
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
         }
     }
 
-    public void ping(String dest, String interval, StringBuffer sb) throws IOException, InterruptedException {
-        String cmd = "ping -i "+ interval + " " + dest;
-        Log.d(TAG, "int :" + intervalFromActivity + " " + destFromActivity);
+    class checkTime implements Runnable{
+        @Override
+        public void run() {
+            eclTime();
+        }
+    }
+
+    public void eclTime(){
+        while(RunTest){
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Message msg = this.handler.obtainMessage();
+            msg.what = 2;
+            this.handler.sendMessage(msg);
+            Log.e(TAG,"SONG WwW");
+        }
+    }
+
+    public void ping(String dest, String repeats, String interval, String size, StringBuffer sb) throws IOException, InterruptedException {
+
+        // set cmd and run process
+        String cmd = "ping" + " -c " + repeats + " -i " + interval + " -s " + size + " " + dest;
+        Log.e(TAG, "SONG cmd : " + cmd);
         Process process = Runtime.getRuntime().exec(cmd);
 
+        // bundle for give message to handler
         Bundle bundlePingResult = new Bundle();
 
+        // get outputs
         BufferedReader pingReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         String line;
 
+        // log text file name
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMDD_HHmmss");
         String filename = dateFormat.format(new Date(System.currentTimeMillis())).toString();
 
+        // set folder name and make (root dir)
         folderDest = (Environment.getExternalStorageDirectory() + "/DMT/PING_LOG");
         fileDest = Environment.getExternalStorageDirectory().getAbsolutePath()+"/DMT/DMT_"+ filename +".txt";
         Util.makeRootDir(folderDest);
 
-        Util.writeLog("////////ping test start",fileDest);
+        boolean printFlag = false;
+        Util.writeLog("////////ping test start", fileDest);
+        Log.e(TAG, "SONG RunTest : "+RunTest);
         while(RunTest){
             line = pingReader.readLine();
-            Log.d(TAG, line);
-            if(line == null)
+            if(line == null){
+                RunTest = false;
+                Log.e(TAG, "SONG AA");
                 break;
-            bundlePingResult.putString("test", line.toString());
-            Message msg = this.handler.obtainMessage();
-            msg.what = 1;
-            msg.setData(bundlePingResult);
-            this.handler.sendMessage(msg);
+            }
+            if(readyToGetMsg && printFlag){
+                readyToGetMsg = false;
+                Log.e(TAG, "SONG BB");
+                bundlePingResult.putString("line", line.toString());
+                Message msg = this.handler.obtainMessage();
+                msg.what = 1;
+                msg.setData(bundlePingResult);
+                this.handler.sendMessage(msg);
+            }
+            Log.e(TAG, "SONG ZZ");
+            printFlag = true;
         }
+        Log.e(TAG, "SONG CC");
         process.waitFor();
-
+        Log.e(TAG, "SONG DD");
         if (process != null) {
             process.destroy();
         }
